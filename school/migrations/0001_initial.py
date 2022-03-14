@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
                 ('value', models.FloatField()),
                 ('course_class', models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='Evaluations', to='school.courseclass')),
                 ('professor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='Evaluations', to='school.professor')),
-                ('type_Evaluation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='Evaluations', to='school.typeevaluation')),
+                ('type_evaluation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='Evaluations', to='school.typeevaluation')),
             ],
             options={
                 'verbose_name': 'Evaluation',

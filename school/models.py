@@ -193,15 +193,15 @@ class TypeEvaluation(models.Model):
 
 
 class Evaluation(models.Model):
-    course_class = models.ForeignKey("CourseClass", on_delete=models.CASCADE, related_name="Evaluations", default=None)
+    course_class = models.ForeignKey("CourseClass", on_delete=models.CASCADE, related_name="evaluations", default=None)
     professor = models.ForeignKey(
-        "Professor", on_delete=models.CASCADE, related_name="Evaluations"
+        "Professor", on_delete=models.CASCADE, related_name="evaluations"
     )
     name = models.CharField(max_length=255)
-    type_Evaluation = models.ForeignKey(
+    type_evaluation = models.ForeignKey(
         "TypeEvaluation",
         on_delete=models.SET_NULL,
-        related_name="Evaluations",
+        related_name="evaluations",
         blank=True,
         null=True,
     )

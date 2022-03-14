@@ -82,10 +82,10 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(models.Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ["name", "course_class", "professor", "type_Evaluation"]
+    list_display = ["name", "course_class", "professor", "type_evaluation"]
     search_fields = ["name", "professor", "course_class"]
     ordering = ["name"]
-    list_filter = ['type_Evaluation']
+    list_filter = ['type_evaluation']
 
 admin.site.register(models.GradeEvaluation)
 admin.site.register(models.TypeEvaluation)

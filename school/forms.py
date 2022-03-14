@@ -1,6 +1,7 @@
 from django import forms
 from users.models import CustomUser
 from . import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class ProfessorCreationForm(forms.ModelForm):
@@ -42,6 +43,9 @@ class CourseCreationForm(forms.ModelForm):
         
 
 class EvaluationCreationForm(forms.ModelForm):
+    
+    value = forms.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(100.0)])
+    
     class Meta:
         model = models.Evaluation
-        fields = "__all__"
+        fields = ('name','type_evaluation',  'description', 'value')
