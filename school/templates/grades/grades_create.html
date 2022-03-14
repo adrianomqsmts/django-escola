@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    {{subject}} | {{eval}} <br>
+
+    {% if error %}{{error}}{% endif %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {% for student in students %}
+        <div class="form-group">
+            <label for="{{student.registration}}">{{student.user.get_full_name}}</label>
+            <input type="number" class="form-control" name="{{student.registration}}" id="{{student.registration}}"
+                aria-describedby="helpId" placeholder="" min="0" max="{{eval.value}}">
+        </div>
+        {% endfor %}
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+{% endblock content %}

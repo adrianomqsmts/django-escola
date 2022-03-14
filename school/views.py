@@ -1,11 +1,12 @@
-from urllib import request
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from . import models
 from . import forms
+
 
 # Create your views here.
 class IndexView(TemplateView):
@@ -30,14 +31,6 @@ class CourseListView(ListView):
     def get_queryset(self):
         query = models.CourseClass.objects.filter(professor=self.request.user.professor)
         return query
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        query = models.CourseClass.objects.filter(professor=self.request.user.professor)
-        context["Evaluations"] = models.Evaluation.objects.filter(
-            professor=self.request.user.professor
-        )
-        return context
 
 
 class EvaluationCreateView(CreateView):
@@ -70,3 +63,38 @@ class EvaluationDeleteView(DeleteView):
 
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
+
+
+
+class GradeEvaluationCreateView(TemplateView):
+    template_name = "grades/grades_create.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subject"] = models.CourseClass.objects.get(
+            pk=self.kwargs["pk_subject"]
+        )
+        context["eval"] = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
+        context["students"] = context["subject"].students.all()
+        return context
+
+
+    def post(self, request, *args, **kwargs):
+        i = 0
+        for key, value in request.POST.items():
+            if i == 0:
+                i+=1
+                continue
+            try:
+                grade_eval = models.GradeEvaluation()
+                grade_eval.value = value
+                grade_eval.student = models.Student.objects.get(registration=key)
+                grade_eval.course_class = models.CourseClass.objects.get(pk=self.kwargs["pk_subject"])
+                grade_eval.evaluation = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
+                grade_eval.save()
+            except Exception as e:
+                 return render(request, self.template_name, context={'error': e}) 
+        return HttpResponseRedirect(reverse_lazy("course_list"))
+
+
+

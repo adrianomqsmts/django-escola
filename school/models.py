@@ -67,7 +67,7 @@ class Professor(models.Model):
         verbose_name_plural = "Professors"
 
     def __str__(self):
-        return f'{self.user.get_full_name()} | {self.department}'
+        return f"{self.user.get_full_name()} | {self.department}"
 
     def get_absolute_url(self):
         return reverse("professor_detail", kwargs={"pk": self.pk})
@@ -86,7 +86,9 @@ class Student(models.Model):
         blank=True,
         null=True,
     )
-    courses = models.ManyToManyField("Course",  blank=True)
+    courses_class = models.ManyToManyField(
+        "CourseClass", related_name="students", blank=True
+    )
 
     class Meta:
         verbose_name = "Student"
@@ -103,7 +105,9 @@ class Course(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     total_credits = models.IntegerField()
-    department =  models.ForeignKey('Department', on_delete=models.CASCADE, related_name='courses', default=None)
+    department = models.ForeignKey(
+        "Department", on_delete=models.CASCADE, related_name="courses", default=None
+    )
     prerequisites = models.ManyToManyField("Course", blank=True)
 
     class Meta:
@@ -126,7 +130,12 @@ class CourseClass(models.Model):
         "Course", on_delete=models.CASCADE, related_name="course_classes"
     )
     professor = models.ForeignKey(
-        "Professor", on_delete=models.CASCADE, related_name="course_classes", default=None, null = True, blank=True
+        "Professor",
+        on_delete=models.CASCADE,
+        related_name="course_classes",
+        default=None,
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -134,7 +143,7 @@ class CourseClass(models.Model):
         verbose_name_plural = "Course Classes"
 
     def __str__(self):
-        return f'{self.course.name} | {self.schedule}'
+        return f"{self.course.name} | {self.schedule}"
 
     def get_absolute_url(self):
         return reverse("course_class_detail", kwargs={"pk": self.pk})
@@ -150,7 +159,7 @@ class Schedule(models.Model):
     class Meta:
         verbose_name = "Schedule"
         verbose_name_plural = "Schedules"
-        unique_together = ('classroom', 'start_class')
+        unique_together = ("classroom", "start_class")
 
     def __str__(self):
         return f"{self.classroom} : {self.start_class} - {self.finish_class}"
@@ -169,13 +178,17 @@ class Classroom(models.Model):
     class Meta:
         verbose_name = "Classroom"
         verbose_name_plural = "Classrooms"
-        unique_together = ('building', 'number',)
+        unique_together = (
+            "building",
+            "number",
+        )
 
     def __str__(self):
-        return f'{self.building.name}, room: {self.number}'
+        return f"{self.building.name}, room: {self.number}"
 
     def get_absolute_url(self):
         return reverse("classroom_detail", kwargs={"pk": self.pk})
+
 
 class TypeEvaluation(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -189,11 +202,16 @@ class TypeEvaluation(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("typeEvaluation_detail", kwargs={"pk": self.pk})
+        return reverse("type_evaluation_detail", kwargs={"pk": self.pk})
 
 
 class Evaluation(models.Model):
-    course_class = models.ForeignKey("CourseClass", on_delete=models.CASCADE, related_name="evaluations", default=None)
+    course_class = models.ForeignKey(
+        "CourseClass",
+        on_delete=models.CASCADE,
+        related_name="evaluations",
+        default=None,
+    )
     professor = models.ForeignKey(
         "Professor", on_delete=models.CASCADE, related_name="evaluations"
     )
@@ -212,28 +230,40 @@ class Evaluation(models.Model):
     class Meta:
         verbose_name = "Evaluation"
         verbose_name_plural = "Evaluations"
-        unique_together = ('course_class', 'name')
+        unique_together = ("course_class", "name")
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("Evaluation_detail", kwargs={"pk": self.pk})
+        return reverse("evaluation_detail", kwargs={"pk": self.pk})
 
 
 class GradeEvaluation(models.Model):
-    course_class = models.ForeignKey('CourseClass', on_delete=models.SET_NULL, null=True, related_name='grade_Evaluations')
-    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='grade_Evaluations')
-    Evaluation = models.ForeignKey('Evaluation', on_delete=models.SET_NULL, related_name='grade_Evaluations', null=True)
-    value = models.FloatField()    
+    course_class = models.ForeignKey(
+        "CourseClass",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="grade_evaluations",
+    )
+    student = models.ForeignKey(
+        "Student", on_delete=models.CASCADE, related_name="grade_evaluations"
+    )
+    evaluation = models.ForeignKey(
+        "evaluation",
+        on_delete=models.SET_NULL,
+        related_name="grade_evaluations",
+        null=True,
+    )
+    value = models.FloatField()
 
     class Meta:
         verbose_name = "Grade Evaluation"
         verbose_name_plural = "Grade Evaluations"
-        unique_together = ('course_class', 'student', 'Evaluation')
+        unique_together = ("course_class", "student", "evaluation")
 
     def __str__(self):
-        return f'{self.student.user.get_full_name()} | {self.course_class.course.name}'
+        return f"{self.student.user.get_full_name()} | {self.course_class.course.name}"
 
     def get_absolute_url(self):
-        return reverse("gradeEvaluation_detail", kwargs={"pk": self.pk})
+        return reverse("grade_evaluation_detail", kwargs={"pk": self.pk})

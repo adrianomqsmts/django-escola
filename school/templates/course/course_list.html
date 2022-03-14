@@ -11,10 +11,15 @@
         <h5>Evaluations</h5>
         {% for evaluation in subject.evaluations.all %}
         {{evaluation.name}} | {{evaluation.value}} | <a href="{% url 'evaluation_update' evaluation.id %}">Update</a> |
-        <a href="{% url 'evaluation_delete' evaluation.id %}">Delete</a>
-
+        <a href="{% url 'evaluation_delete' evaluation.id %}">Delete</a> |
+        <a href="{% url 'grades_create' subject.id evaluation.id %}">Lançar Notas</a>
         <br>
         {% endfor %}
+        <h5>Students</h5>
+        {% for student in subject.students.all  %}
+            {{student}} <br>
+        {% endfor %}
+
     </div>
     <a name="" id="" class="btn btn-primary" href="{% url 'evaluation_create' subject.id %}" role="button">
         Add
