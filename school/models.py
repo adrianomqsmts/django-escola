@@ -125,6 +125,9 @@ class CourseClass(models.Model):
     course = models.ForeignKey(
         "Course", on_delete=models.CASCADE, related_name="course_classes"
     )
+    professor = models.ForeignKey(
+        "Professor", on_delete=models.CASCADE, related_name="course_classes", default=None, null = True, blank=True
+    )
 
     class Meta:
         verbose_name = "Course Class"
@@ -174,31 +177,31 @@ class Classroom(models.Model):
     def get_absolute_url(self):
         return reverse("classroom_detail", kwargs={"pk": self.pk})
 
-class TypeTest(models.Model):
+class TypeEvaluation(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
 
     class Meta:
-        verbose_name = "Type Test"
-        verbose_name_plural = "Type Tests"
+        verbose_name = "Type Evaluation"
+        verbose_name_plural = "Type Evaluations"
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("typeTest_detail", kwargs={"pk": self.pk})
+        return reverse("typeEvaluation_detail", kwargs={"pk": self.pk})
 
 
-class Test(models.Model):
-    course_class = models.ForeignKey("CourseClass", on_delete=models.CASCADE, related_name="tests", default=None)
+class Evaluation(models.Model):
+    course_class = models.ForeignKey("CourseClass", on_delete=models.CASCADE, related_name="Evaluations", default=None)
     professor = models.ForeignKey(
-        "Professor", on_delete=models.CASCADE, related_name="tests"
+        "Professor", on_delete=models.CASCADE, related_name="Evaluations"
     )
-    name = models.CharField(max_length=255, unique=True)
-    type_test = models.ForeignKey(
-        "TypeTest",
+    name = models.CharField(max_length=255)
+    type_Evaluation = models.ForeignKey(
+        "TypeEvaluation",
         on_delete=models.SET_NULL,
-        related_name="tests",
+        related_name="Evaluations",
         blank=True,
         null=True,
     )
@@ -207,29 +210,30 @@ class Test(models.Model):
     # grade_value = models.FloatField()
 
     class Meta:
-        verbose_name = "Test"
-        verbose_name_plural = "Tests"
+        verbose_name = "Evaluation"
+        verbose_name_plural = "Evaluations"
+        unique_together = ('course_class', 'name')
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("test_detail", kwargs={"pk": self.pk})
+        return reverse("Evaluation_detail", kwargs={"pk": self.pk})
 
 
-class GradeTest(models.Model):
-    course_class = models.ForeignKey('CourseClass', on_delete=models.SET_NULL, null=True, related_name='grade_tests')
-    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='grade_tests')
-    test = models.ForeignKey('Test', on_delete=models.SET_NULL, related_name='grade_tests', null=True)
+class GradeEvaluation(models.Model):
+    course_class = models.ForeignKey('CourseClass', on_delete=models.SET_NULL, null=True, related_name='grade_Evaluations')
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='grade_Evaluations')
+    Evaluation = models.ForeignKey('Evaluation', on_delete=models.SET_NULL, related_name='grade_Evaluations', null=True)
     value = models.FloatField()    
 
     class Meta:
-        verbose_name = "Grade Test"
-        verbose_name_plural = "Grade Tests"
-        unique_together = ('course_class', 'student', 'test')
+        verbose_name = "Grade Evaluation"
+        verbose_name_plural = "Grade Evaluations"
+        unique_together = ('course_class', 'student', 'Evaluation')
 
     def __str__(self):
         return f'{self.student.user.get_full_name()} | {self.course_class.course.name}'
 
     def get_absolute_url(self):
-        return reverse("gradetest_detail", kwargs={"pk": self.pk})
+        return reverse("gradeEvaluation_detail", kwargs={"pk": self.pk})

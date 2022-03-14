@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Bem-vindo professor: {{request.user.email}}</h1>
+
+{{request.user.d.salary}}
+
+<a name="" id="" class="btn btn-primary" href="{% url 'course_list' %}" role="button">Disciplinas</a>
+
+{% endblock content %}

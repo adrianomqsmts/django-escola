@@ -21,3 +21,7 @@ urlpatterns = [
     path('', include('school.urls')),
     path('users/', include('users.urls')),
 ]
+
+admin.AdminSite.site_header = 'School Administration'
+admin.AdminSite.site_title = 'Welcome'
+admin.AdminSite.index_title = 'School Administration'

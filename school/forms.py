@@ -38,3 +38,10 @@ class CourseCreationForm(forms.ModelForm):
     class Meta:
         model = models.Course
         fields = "__all__"
+        
+        
+
+class EvaluationCreationForm(forms.ModelForm):
+    class Meta:
+        model = models.Evaluation
+        fields = "__all__"

@@ -1,3 +1,3 @@
-from django.test import TestCase
+from django.Evaluation import TestCase
 
-# Create your tests here.
+# Create your Evaluations here.
