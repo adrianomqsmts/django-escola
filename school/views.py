@@ -65,7 +65,6 @@ class EvaluationDeleteView(DeleteView):
         return self.post(request, *args, **kwargs)
 
 
-
 class GradeEvaluationCreateView(TemplateView):
     template_name = "grades/grades_create.html"
 
@@ -78,23 +77,45 @@ class GradeEvaluationCreateView(TemplateView):
         context["students"] = context["subject"].students.all()
         return context
 
-
     def post(self, request, *args, **kwargs):
         i = 0
         for key, value in request.POST.items():
             if i == 0:
-                i+=1
+                i += 1
                 continue
             try:
-                grade_eval = models.GradeEvaluation()
-                grade_eval.value = value
-                grade_eval.student = models.Student.objects.get(registration=key)
-                grade_eval.course_class = models.CourseClass.objects.get(pk=self.kwargs["pk_subject"])
-                grade_eval.evaluation = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
+                grade_eval = models.GradeEvaluation(
+                    value=value,
+                    is_launched=True,
+                    student=models.Student.objects.get(registration=key),
+                    course_class=models.CourseClass.objects.get(
+                        pk=self.kwargs["pk_subject"]
+                    ),
+                    evaluation=models.Evaluation.objects.get(pk=self.kwargs["pk_eval"]),
+                )
                 grade_eval.save()
             except Exception as e:
-                 return render(request, self.template_name, context={'error': e}) 
+                return render(request, self.template_name, context={"error": e})
+            eval = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
+            eval.is_launched = True 
+            eval.save()
         return HttpResponseRedirect(reverse_lazy("course_list"))
 
 
+class StudentGradesListView(ListView):
+    context_object_name = "grades"
+    template_name = "grades/grades_list.html"
 
+    def get_queryset(self, *args, **kwargs):
+        query = models.GradeEvaluation.objects.filter(
+            student__id=self.kwargs["pk_std"],
+            course_class=self.kwargs["pk_subject"],
+        )
+        return query
+
+
+class GradesUpdateView(UpdateView):
+    model = models.GradeEvaluation
+    template_name = "grades/grades_update.html"
+    fields = ("value",)
+    success_url = reverse_lazy("course_list")

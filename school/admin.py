@@ -24,6 +24,7 @@ class StudentAdmin(admin.ModelAdmin):
     list_display = ["user", "first_name", "last_name", "department"]
     list_filter = ["department"]
     search_fields = ["user", "first_name", "last_name", "department"]
+    filter_horizontal = ('courses_class',)
     ordering = ["department"]
 
     def first_name(self, obj):

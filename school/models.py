@@ -1,3 +1,4 @@
+from xmlrpc.client import Boolean
 from django.db import models
 from django.urls import reverse
 from users.models import CustomUser
@@ -137,6 +138,8 @@ class CourseClass(models.Model):
         null=True,
         blank=True,
     )
+    is_active = models.BooleanField(default=True)
+        
 
     class Meta:
         verbose_name = "Course Class"
@@ -225,6 +228,7 @@ class Evaluation(models.Model):
     )
     description = models.TextField(blank=True, null=True)
     value = models.FloatField()
+    is_launched = models.BooleanField(default=False)
     # grade_value = models.FloatField()
 
     class Meta:
@@ -256,6 +260,7 @@ class GradeEvaluation(models.Model):
         null=True,
     )
     value = models.FloatField()
+    is_launched = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Grade Evaluation"

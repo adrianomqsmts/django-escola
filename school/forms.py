@@ -19,11 +19,11 @@ class StudentCreationForm(forms.ModelForm):
     user = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_professor=False).all()
     )
-    courses_class = forms.ModelMultipleChoiceField(
-        queryset=models.CourseClass.objects.order_by("course").all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-    )
+    # courses_class = forms.ModelMultipleChoiceField(
+    #     queryset=models.CourseClass.objects.order_by("course").all(),
+    #     widget=forms.CheckboxSelectMultiple,
+    #     required=False,
+    # )
 
     class Meta:
         model = models.Student
@@ -52,4 +52,10 @@ class EvaluationCreationForm(forms.ModelForm):
         model = models.Evaluation
         fields = ("name", "type_evaluation", "description", "value")
 
+
+class CourseClassForm(forms.ModelForm):
+    
+    class Meta:
+        model = models.CourseClass
+        fields = ("is_active",)
 

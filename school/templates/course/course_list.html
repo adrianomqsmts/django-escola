@@ -8,16 +8,17 @@
     <div class="card-body">
         <h4 class="card-title">{{subject.course.name}}</h4>
         <p class="card-text">{{subject.schedule}}</p>
+        {% comment %} <a href="{% url 'course_completed' subject.id %}">Concluir Disciplina</a> {% endcomment %}
         <h5>Evaluations</h5>
         {% for evaluation in subject.evaluations.all %}
         {{evaluation.name}} | {{evaluation.value}} | <a href="{% url 'evaluation_update' evaluation.id %}">Update</a> |
         <a href="{% url 'evaluation_delete' evaluation.id %}">Delete</a> |
-        <a href="{% url 'grades_create' subject.id evaluation.id %}">Lançar Notas</a>
+       {% if evaluation.is_launched  %} As notas já foram lançadas {% else %} <a href="{% url 'grades_create' subject.id evaluation.id %}">Lançar Notas</a>{% endif %}
         <br>
         {% endfor %}
         <h5>Students</h5>
         {% for student in subject.students.all  %}
-            {{student}} <br>
+            {{student}} |  <a href="{% url 'grades_student_list' subject.id student.id %}">Ver Notas</a> <br> 
         {% endfor %}
 
     </div>
