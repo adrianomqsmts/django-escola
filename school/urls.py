@@ -11,6 +11,6 @@ urlpatterns = [
     path("avaliacao/<int:pk>/update", views.AvaliacaoUpdateView.as_view(), name="update_avaliacao"),
     path("avaliacao/<int:pk>/delete", views.AvaliacaoDeleteView.as_view(), name="delete_avaliacao"),
     path("disciplina/<int:pk_disciplina>/avaliacao/<int:pk_avaliacao>/notas/create", views.NotasCreateView.as_view(), name="larcar_notas"),
-    # path("course/<int:pk_subject>/student/<int:pk_std>/grades/list", views.StudentGradesListView.as_view(), name="grades_student_list"),
-    # path("grades/<int:pk>", views.GradesUpdateView.as_view(), name="grades_update"),
+    path("disciplina/<int:pk_disciplina>/estudante/<int:pk_aluno>/notas/list", views.AlunoNotaListView.as_view(), name="list_aluno_notas"),
+  #  path("nota/<int:pk>", views.AlunoNotaUpdateView.as_view(), name="update_nota_aluno"),
 ]

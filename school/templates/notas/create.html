@@ -17,7 +17,7 @@
         <div class="col-md-6 form-group">
             <label for="{{aluno.matricula}}">{{aluno.matricula}} - {{aluno.user.get_full_name}}</label>
             <input type="number" class="form-control" name="{{aluno.matricula}}" id="{{aluno.matricula}}"
-                aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}" required="">
+                aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}" required="" step="any">
         </div>
         {% endfor %}
     </div>

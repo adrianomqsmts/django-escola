@@ -12,19 +12,20 @@
     <h2 class="card-title">{{disciplina.curso.nome}} | <span class="h5">{{disciplina.horario}}</span></h2>
     <hr>
     <h4>Avaliações: <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Adicionar</a></h4>
-    <div class="card-columns card-deck">
+    <div class="card-columns">
       {% for avaliacao in disciplina.avaliacoes.all %}
       <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%endif%}">
         <div class="card-body">
           <h5 class="card-title">{{avaliacao.nome | upper}}: valor : {{avaliacao.valor}}</h5>
           <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
           <a href="{% url 'delete_avaliacao' avaliacao.id %}">Remover</a>
+          <br>
           {% if not avaliacao.nota_eh_lancada %}
-          | <a href="{% url 'larcar_notas' disciplina.id avaliacao.id %}">
+          <a href="{% url 'larcar_notas' disciplina.id avaliacao.id %}">
             Lançar Notas
           </a>
           {% else %}
-          <br>
+          
           Notas já foram lançadas
           {% endif %}
         </div>
@@ -42,7 +43,7 @@
     <hr>
     <h4>Estudantes Matriculados:</h4>
     {% for aluno  in disciplina.alunos.all %}
-    {{aluno}} <br>
+    {{aluno}} <br> <a href="{% url 'list_aluno_notas' disciplina.id aluno.id %}">Ver Notas</a> <br>
     {% endfor %}
   </div>
 </div>

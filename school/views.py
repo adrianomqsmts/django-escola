@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView, View
 from django.views.generic.list import ListView
@@ -49,10 +49,14 @@ class DisciplinaListView(ListView):
     model = models.Disciplina
     context_object_name = "disciplinas"
     template_name = "disciplina/list.html"
-    
-    def get_context_data(self,*args, **kwargs):
+
+    def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['total_por_disciplina'] =  models.Disciplina.calcular_total_de_nota_distribuida_por_disciplina(self.request.user.professor)
+        context[
+            "total_por_disciplina"
+        ] = models.Disciplina.calcular_total_de_nota_distribuida_por_disciplina(
+            self.request.user.professor
+        )
         return context
 
     def get_queryset(self):
@@ -65,19 +69,26 @@ class AvaliacaoCreateView(CreateView):
     form_class = forms.AvaliacaoCreationForm
     template_name = "avaliacao/create.html"
     success_url = reverse_lazy("list_disciplinas")
-    
+
     def form_valid(self, form):
         avaliacao = form.save(commit=False)
         avaliacao.disciplina = models.Disciplina.objects.get(pk=self.kwargs["pk"])
         avaliacao.professor = models.Professor.objects.get(
             id=self.request.user.professor.id
         )
-        total = avaliacao.valor + models.Disciplina.calcular_total_de_nota(
+        disciplina_total = models.Disciplina.calcular_total_de_nota(
             avaliacao.disciplina,
         )["valor__sum"]
+        if disciplina_total:
+            total = avaliacao.valor + disciplina_total
+        else:
+            total = avaliacao.valor
         if total > 100:
             context = self.get_context_data()
-            messages.warning(self.request, 'Valor da Avalição faz com que o semestre supere 100 pontos.')
+            messages.warning(
+                self.request,
+                "Valor da Avalição faz com que o semestre supere 100 pontos.",
+            )
             return render(self.request, self.template_name, context=context)
         avaliacao.save()
         return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
@@ -107,7 +118,9 @@ class NotasCreateView(TemplateView):
         context["disciplina"] = models.Disciplina.objects.get(
             pk=self.kwargs["pk_disciplina"]
         )
-        context["avaliacao"] = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
+        context["avaliacao"] = models.Avaliacao.objects.get(
+            pk=self.kwargs["pk_avaliacao"]
+        )
         context["alunos"] = context["disciplina"].alunos.all()
         return context
 
@@ -122,16 +135,28 @@ class NotasCreateView(TemplateView):
             try:
                 float(value)
             except:
-                messages.warning(self.request, f"Lamento, a nota do aluno com matricula {key} não é um valor válido")
-                return render(request, self.template_name, context=self.get_context_data())
+                messages.warning(
+                    self.request,
+                    f"Lamento, a nota do aluno com matricula {key} não é um valor válido",
+                )
+                return render(
+                    request, self.template_name, context=self.get_context_data()
+                )
             if (float(value) > avaliacao.valor) or (float(value) <= 0):
-                messages.warning(self.request, f"Lamento, a nota do aluno com matricula {key} supera a nota da avaliacao")
-                return render(request, self.template_name, context=self.get_context_data())
-            notas.append(models.Nota(
-                valor=value,
-                aluno=models.Aluno.objects.get(matricula=key),
-                avaliacao=avaliacao,
-            ))
+                messages.warning(
+                    self.request,
+                    f"Lamento, a nota do aluno com matricula {key} supera a nota da avaliacao",
+                )
+                return render(
+                    request, self.template_name, context=self.get_context_data()
+                )
+            notas.append(
+                models.Nota(
+                    valor=value,
+                    aluno=models.Aluno.objects.get(matricula=key),
+                    avaliacao=avaliacao,
+                )
+            )
             for nota in notas:
                 nota.save()
             avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
@@ -140,20 +165,44 @@ class NotasCreateView(TemplateView):
         return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
 
-# class StudentGradesListView(ListView):
-#     context_object_name = "grades"
-#     template_name = "grades/grades_list.html"
+class AlunoNotaListView(ListView):
+    context_object_name = "notas"
+    template_name = "notas/list.html"
 
-#     def get_queryset(self, *args, **kwargs):
-#         query = models.GradeEvaluation.objects.filter(
-#             student__id=self.kwargs["pk_std"],
-#             course_class=self.kwargs["pk_subject"],
-#         )
-#         return query
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["aluno"] = models.Aluno.objects.get(id=self.kwargs["pk_aluno"])
+        context["disciplina"] = models.Disciplina.objects.get(
+            id=self.kwargs["pk_disciplina"]
+        )
+        return context
 
+    def post(self, request, *args, **kwargs):
+        i = 0
+        for key, value in request.POST.items():
+            if i == 0:
+                i += 1
+                continue
+            nota = models.Nota.objects.get(pk=key)
+            nota.valor = float(request.POST.get(str(key)))
+            if (nota.valor) <= 0 or (nota.avaliacao.valor < nota.valor):
+                messages.warning(request, f"Lamento, a nota supera a nota da avaliacao")
+                return redirect(
+                    "list_aluno_notas",
+                    pk_disciplina=self.kwargs["pk_disciplina"],
+                    pk_aluno=self.kwargs["pk_aluno"],
+                )
+            nota.save()
+            messages.success(request, f"Nota atualizada com sucesso.")
+        return redirect(
+            "list_aluno_notas",
+            pk_disciplina=self.kwargs["pk_disciplina"],
+            pk_aluno=self.kwargs["pk_aluno"],
+        )
 
-# class GradesUpdateView(UpdateView):
-#     model = models.GradeEvaluation
-#     template_name = "grades/grades_update.html"
-#     fields = ("value",)
-#     success_url = reverse_lazy("course_list")
+    def get_queryset(self, *args, **kwargs):
+        query = models.Nota.objects.filter(
+            aluno__id=self.kwargs["pk_aluno"],
+            avaliacao__disciplina=self.kwargs["pk_disciplina"],
+        )
+        return query
