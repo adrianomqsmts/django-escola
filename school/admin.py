@@ -6,10 +6,10 @@ from . import forms
 @admin.register(models.Professor)
 class ProfessorAdmin(admin.ModelAdmin):
     form = forms.ProfessorCreationForm
-    list_display = ["user", "first_name", "last_name", "department"]
-    list_filter = ["department"]
-    search_fields = ["user", "first_name", "last_name", "department"]
-    ordering = ["department"]
+    list_display = ["user", "first_name", "last_name", "departamento"]
+    list_filter = ["departamento"]
+    search_fields = ["user", "first_name", "last_name", "departamento"]
+    ordering = ["departamento"]
 
     def first_name(self, obj):
         return obj.user.first_name
@@ -18,14 +18,12 @@ class ProfessorAdmin(admin.ModelAdmin):
         return obj.user.last_name
 
 
-@admin.register(models.Student)
-class StudentAdmin(admin.ModelAdmin):
-    form = forms.StudentCreationForm
-    list_display = ["user", "first_name", "last_name", "department"]
-    list_filter = ["department"]
-    search_fields = ["user", "first_name", "last_name", "department"]
-    filter_horizontal = ('courses_class',)
-    ordering = ["department"]
+@admin.register(models.Aluno)
+class AlunoAdmin(admin.ModelAdmin):
+    form = forms.AlunoCreationForm
+    list_display = ["matricula","user", "first_name", "last_name"]
+    search_fields = ["matricula", "user", "first_name", "last_name"]
+    filter_horizontal = ['disciplinas']
 
     def first_name(self, obj):
         return obj.user.first_name
@@ -34,59 +32,60 @@ class StudentAdmin(admin.ModelAdmin):
         return obj.user.last_name
 
 
-@admin.register(models.Course)
-class CourseAdmin(admin.ModelAdmin):
-    form = forms.CourseCreationForm
-    list_display = ["name", "department"]
-    list_filter = ["department"]
-    search_fields = ["name"]
-    ordering = ["department"]
+@admin.register(models.Curso)
+class CursoAdmin(admin.ModelAdmin):
+    form = forms.CursoCreationForm
+    list_display = ["codigo", "nome", "departamento"]
+    list_filter = ["departamento"]
+    search_fields = ["codigo", "nome"]
+    ordering = ["codigo", "nome", "departamento"]
+    list_display_links = ["codigo", "nome"]
 
 
-@admin.register(models.Building)
-class BuildingAdmin(admin.ModelAdmin):
-    list_display = ["name", "number"]
-    search_fields = ["name"]
-    ordering = ["name"]
+@admin.register(models.Disciplina)
+class DisciplinaAdmin(admin.ModelAdmin):
+    autocomplete_fields  = ("curso", "professor", "horario")
+    list_display = ["curso","horario", "ano", "semestre", "professor", "eh_finalizada"]
+    search_fields = ["professor", "semestre", "curso__nome", "horario__predio", "ano"]
+    list_filter = ["eh_finalizada"]
+    ordering = ["ano"]
 
 
-@admin.register(models.Classroom)
-class ClassroomAdmin(admin.ModelAdmin):
-    list_display = ["building", "capacity", "number"]
-    search_fields = ["building", "number"]
-    ordering = ["building"]
+@admin.register(models.Avaliacao)
+class AvaliacaoAdmin(admin.ModelAdmin):
+    pass
+    # list_display = ["nome", "disciplina", "tipo_avaliacao"]
+    # search_fields = ["nome", "disciplina"]
+    # ordering = ["nome"]
+    # list_filter = ['tipo_avaliacao']
 
 
-@admin.register(models.Schedule)
-class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ["classroom", "start_class", "finish_class"]
-    search_fields = [
-        "classroom",
-    ]
-    ordering = ["classroom"]
+@admin.register(models.Sala)
+class SalaAdmin(admin.ModelAdmin):
+    list_display = ["predio", "porta", "capacidade", "tem_projetor"]
+    list_filter = ["tem_projetor"]
 
 
-@admin.register(models.CourseClass)
-class CourseClassAdmin(admin.ModelAdmin):
-    list_display = ["course", "schedule"]
-    search_fields = [
-        "course",
-    ]
-    ordering = ["course"]
+@admin.register(models.Horario)
+class HorarioAdmin(admin.ModelAdmin):
+    list_display = ["sala", "inicio", "termino"]
+    search_fields = ["sala__predio", "sala__porta"]
+    
+
+@admin.register(models.TipoAvaliacao)
+class TipoAvaliacaoAdmin(admin.ModelAdmin):
+    list_display = ["nome", "descricao"]
+    ordering = ["nome"]
+    
+    
 
 
-@admin.register(models.Department)
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ["name", "building", "coordinator"]
-    search_fields = ["name", "coordinator"]
-    ordering = ["name"]
 
-@admin.register(models.Evaluation)
-class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ["name", "course_class", "professor", "type_evaluation"]
-    search_fields = ["name", "professor", "course_class"]
-    ordering = ["name"]
-    list_filter = ['type_evaluation']
-
-admin.site.register(models.GradeEvaluation)
-admin.site.register(models.TypeEvaluation)
+@admin.register(models.Departamento)
+class DepartamentoAdmin(admin.ModelAdmin):
+    list_display = ["nome", "coordenador"]
+    ordering = ["nome"]
+    
+    
+admin.site.register(models.Nota)
+admin.site.register(models.Semestre)

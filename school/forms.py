@@ -15,47 +15,42 @@ class ProfessorCreationForm(forms.ModelForm):
         fields = "__all__"
 
 
-class StudentCreationForm(forms.ModelForm):
+class AlunoCreationForm(forms.ModelForm):
     user = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_professor=False).all()
     )
-    # courses_class = forms.ModelMultipleChoiceField(
-    #     queryset=models.CourseClass.objects.order_by("course").all(),
-    #     widget=forms.CheckboxSelectMultiple,
-    #     required=False,
-    # )
 
     class Meta:
-        model = models.Student
+        model = models.Aluno
         fields = "__all__"
 
 
-class CourseCreationForm(forms.ModelForm):
-    prerequisites = forms.ModelMultipleChoiceField(
-        queryset=models.Course.objects.order_by("department").all(),
+class CursoCreationForm(forms.ModelForm):
+    prerequisitos = forms.ModelMultipleChoiceField(
+        queryset=models.Curso.objects.order_by("nome").all(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
     )
 
     class Meta:
-        model = models.Course
+        model = models.Curso
         fields = "__all__"
 
 
-class EvaluationCreationForm(forms.ModelForm):
+# class AvaliacaoCreationForm(forms.ModelForm):
 
-    value = forms.FloatField(
-        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
-    )
+#     valor = forms.FloatField(
+#         validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+#     )
 
-    class Meta:
-        model = models.Evaluation
-        fields = ("name", "type_evaluation", "description", "value")
+#     class Meta:
+#         model = models.Avaliacao
+#         fields = ("nome", "tipo_avaliacao", "descricao", "valor")
 
 
-class CourseClassForm(forms.ModelForm):
+# class DisciplinaForm(forms.ModelForm):
     
-    class Meta:
-        model = models.CourseClass
-        fields = ("is_active",)
+#     class Meta:
+#         model = models.Disciplina
+#         fields = ("eh_finalizada",)
 

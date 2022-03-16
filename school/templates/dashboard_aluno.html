@@ -2,6 +2,8 @@
 
 {% block content %}
 
-<h1>Bem-vindo Aluno: {{request.user.email}}</h1>
+<h1>Bem vindo - {{request.user.email}}</h1>
+
+<a name="" id="" class="btn btn-primary" href="{% url 'course_list_student' %}" role="button">Disciplinas</a>
 
 {% endblock content %}

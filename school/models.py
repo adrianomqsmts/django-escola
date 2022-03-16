@@ -1,274 +1,205 @@
-from xmlrpc.client import Boolean
+from enum import unique
 from django.db import models
-from django.urls import reverse
 from users.models import CustomUser
 
 
-class Building(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    number = models.IntegerField()
-
-    class Meta:
-        verbose_name = "Building"
-        verbose_name_plural = "Buildings"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("building_detail", kwargs={"pk": self.pk})
-
-
-class Department(models.Model):
-
-    name = models.CharField(max_length=255, unique=True)
-    building = models.ForeignKey(
-        "Building",
-        on_delete=models.SET_NULL,
-        related_name="departments",
-        blank=True,
-        null=True,
-    )
-    budget = models.FloatField()
-    coordinator = models.OneToOneField(
-        "Professor",
-        on_delete=models.SET_NULL,
-        related_name="coordinator",
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = "Department"
-        verbose_name_plural = "Departments"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("department_detail", kwargs={"pk": self.pk})
-
-
 class Professor(models.Model):
-    schooling = models.CharField(max_length=45)
-    salary = models.FloatField()
+    registro = models.CharField(unique=True, null=True, max_length=45)
+    escolaridade = models.CharField(max_length=150)
+    salario = models.FloatField()
     user = models.OneToOneField(
         "users.CustomUser", on_delete=models.CASCADE, related_name="professor"
     )
-    department = models.ForeignKey(
-        "Department",
-        on_delete=models.CASCADE,
-        related_name="professors",
-        blank=True,
+    departamento = models.ForeignKey(
+        "Departamento",
+        on_delete=models.SET_NULL,
+        related_name="professores",
         null=True,
+        blank=True,
     )
 
     class Meta:
         verbose_name = "Professor"
-        verbose_name_plural = "Professors"
+        verbose_name_plural = "Professores"
 
     def __str__(self):
-        return f"{self.user.get_full_name()} | {self.department}"
-
-    def get_absolute_url(self):
-        return reverse("professor_detail", kwargs={"pk": self.pk})
+        return f"{self.registro}"
 
 
-class Student(models.Model):
+class Aluno(models.Model):
 
-    registration = models.CharField(max_length=45, unique=True)
+    matricula = models.CharField(max_length=45, unique=True)
     user = models.OneToOneField(
-        "users.CustomUser", on_delete=models.CASCADE, related_name="student"
+        "users.CustomUser", on_delete=models.CASCADE, related_name="alunos"
     )
-    department = models.ForeignKey(
-        "Department",
-        on_delete=models.SET_NULL,
-        related_name="students",
-        blank=True,
-        null=True,
+    departamento = models.ForeignKey(
+        "Departamento", on_delete=models.SET_NULL, null=True, related_name="alunos"
     )
-    courses_class = models.ManyToManyField(
-        "CourseClass", related_name="students", blank=True
-    )
+    disciplinas = models.ManyToManyField("Disciplina")
 
     class Meta:
-        verbose_name = "Student"
-        verbose_name_plural = "Students"
+        verbose_name = "Aluno"
+        verbose_name_plural = "Alunos"
 
     def __str__(self):
-        return self.user.get_full_name()
-
-    def get_absolute_url(self):
-        return reverse("student_detail", kwargs={"pk": self.pk})
+        return self.matricula
 
 
-class Course(models.Model):
+class Departamento(models.Model):
 
-    name = models.CharField(max_length=255, unique=True)
-    total_credits = models.IntegerField()
-    department = models.ForeignKey(
-        "Department", on_delete=models.CASCADE, related_name="courses", default=None
-    )
-    prerequisites = models.ManyToManyField("Course", blank=True)
-
-    class Meta:
-        verbose_name = "Course"
-        verbose_name_plural = "Courses"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("course_detail", kwargs={"pk": self.pk})
-
-
-class CourseClass(models.Model):
-
-    schedule = models.OneToOneField(
-        "Schedule", on_delete=models.CASCADE, related_name="course_class"
-    )
-    course = models.ForeignKey(
-        "Course", on_delete=models.CASCADE, related_name="course_classes"
-    )
-    professor = models.ForeignKey(
+    nome = models.CharField(max_length=255, unique=True)
+    coordenador = models.ForeignKey(
         "Professor",
-        on_delete=models.CASCADE,
-        related_name="course_classes",
-        default=None,
+        on_delete=models.SET_NULL,
         null=True,
+        related_name="departamentos",
         blank=True,
     )
-    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Departamento"
+        verbose_name_plural = "Departamentos"
+
+    def __str__(self):
+        return self.nome
+
+
+class Semestre(models.Model):
+
+    nome = models.CharField(max_length=550, unique=True)
+
+    class Meta:
+        verbose_name = "Semestre"
+        verbose_name_plural = "Semestres"
+
+    def __str__(self):
+        return f"{self.nome}"
+
+
+class Curso(models.Model):
+
+    codigo = models.CharField(max_length=45, null=True)
+    nome = models.CharField(max_length=255)
+    creditos = models.IntegerField()
+
+    departamento = models.ForeignKey(
+        "Departamento", on_delete=models.SET_NULL, null=True, related_name="cursos"
+    )
+    
+    prerequisitos = models.ManyToManyField("Curso")
+
+    class Meta:
+        verbose_name = "curso"
+        verbose_name_plural = "cursos"
+        unique_together = ("nome", "departamento")
+
+    def __str__(self):
+        return f"{self.codigo}"
+
+
+class Sala(models.Model):
+    porta = models.CharField(max_length=150)
+    predio = models.CharField(max_length=150)
+    capacidade = models.IntegerField(default=50)
+    tem_projetor = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Sala"
+        verbose_name_plural = "Salas"
+        unique_together = ["porta", "predio"]
         
+    def __str__(self):
+        return f"{self.predio}, {self.porta}"
+
+
+class Horario(models.Model):
+    inicio = models.TimeField()
+    termino = models.TimeField()
+    sala = models.ForeignKey("Sala", on_delete=models.CASCADE, related_name="horarios")
 
     class Meta:
-        verbose_name = "Course Class"
-        verbose_name_plural = "Course Classes"
+        verbose_name = "Horario"
+        verbose_name_plural = "Horarios"
+        unique_together = ["inicio", "sala"]
 
     def __str__(self):
-        return f"{self.course.name} | {self.schedule}"
-
-    def get_absolute_url(self):
-        return reverse("course_class_detail", kwargs={"pk": self.pk})
+        return f"{self.sala} : {self.inicio} - {self.termino}"
 
 
-class Schedule(models.Model):
-    classroom = models.ForeignKey(
-        "Classroom", on_delete=models.CASCADE, related_name="schedules"
-    )
-    start_class = models.TimeField()
-    finish_class = models.TimeField()
+class Disciplina(models.Model):
 
-    class Meta:
-        verbose_name = "Schedule"
-        verbose_name_plural = "Schedules"
-        unique_together = ("classroom", "start_class")
-
-    def __str__(self):
-        return f"{self.classroom} : {self.start_class} - {self.finish_class}"
-
-    def get_absolute_url(self):
-        return reverse("schedule_detail", kwargs={"pk": self.pk})
-
-
-class Classroom(models.Model):
-    capacity = models.IntegerField()
-    number = models.IntegerField()
-    building = models.ForeignKey(
-        "Building", on_delete=models.CASCADE, related_name="classrooms"
-    )
-
-    class Meta:
-        verbose_name = "Classroom"
-        verbose_name_plural = "Classrooms"
-        unique_together = (
-            "building",
-            "number",
-        )
-
-    def __str__(self):
-        return f"{self.building.name}, room: {self.number}"
-
-    def get_absolute_url(self):
-        return reverse("classroom_detail", kwargs={"pk": self.pk})
-
-
-class TypeEvaluation(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    description = models.TextField()
-
-    class Meta:
-        verbose_name = "Type Evaluation"
-        verbose_name_plural = "Type Evaluations"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("type_evaluation_detail", kwargs={"pk": self.pk})
-
-
-class Evaluation(models.Model):
-    course_class = models.ForeignKey(
-        "CourseClass",
-        on_delete=models.CASCADE,
-        related_name="evaluations",
-        default=None,
-    )
+    ano = models.DateField()
+    eh_finalizada = models.BooleanField(default=False)
     professor = models.ForeignKey(
-        "Professor", on_delete=models.CASCADE, related_name="evaluations"
+        "Professor", on_delete=models.SET_NULL, null=True, related_name="disciplinas"
     )
-    name = models.CharField(max_length=255)
-    type_evaluation = models.ForeignKey(
-        "TypeEvaluation",
+    curso = models.ForeignKey(
+        "Curso", on_delete=models.SET_NULL, null=True, related_name="disciplinas"
+    )
+    semestre = models.ForeignKey(
+        "Semestre", on_delete=models.SET_NULL, null=True, related_name="disciplinas"
+    )
+    horario = models.ForeignKey(
+        "Horario", on_delete=models.SET_NULL, null=True, related_name="disciplinas"
+    )
+
+    class Meta:
+        verbose_name = "Disciplina"
+        verbose_name_plural = "Disciplinas"
+        unique_together = ("ano", "semestre", "horario")
+
+    def __str__(self):
+        return f"{self.curso.nome}"
+
+
+class TipoAvaliacao(models.Model):
+    nome = models.CharField(max_length=150, unique=True)
+    descricao = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Tipo de Avaliação"
+        verbose_name_plural = "Tipos de Avaliações"
+
+    def __str__(self):
+        return self.nome
+
+
+class Avaliacao(models.Model):
+    nome = models.CharField(max_length=255)
+    descricao = models.TextField(blank=True, null=True)
+    valor = models.FloatField()
+    nota_eh_lancada = models.BooleanField(default=False)
+    disciplina = models.ForeignKey(
+        "Disciplina", on_delete=models.SET_NULL, null=True, related_name="avaliacoes"
+    )
+    tipo_avaliacao = models.ForeignKey(
+        "TipoAvaliacao",
         on_delete=models.SET_NULL,
-        related_name="evaluations",
+        null=True,
         blank=True,
-        null=True,
+        related_name="avaliacoes",
     )
-    description = models.TextField(blank=True, null=True)
-    value = models.FloatField()
-    is_launched = models.BooleanField(default=False)
-    # grade_value = models.FloatField()
 
     class Meta:
-        verbose_name = "Evaluation"
-        verbose_name_plural = "Evaluations"
-        unique_together = ("course_class", "name")
+        verbose_name = "Avaliação"
+        verbose_name_plural = "Avaliações"
+        unique_together = ("disciplina", "nome")
 
     def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("evaluation_detail", kwargs={"pk": self.pk})
+        return self.nome
 
 
-class GradeEvaluation(models.Model):
-    course_class = models.ForeignKey(
-        "CourseClass",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="grade_evaluations",
+class Nota(models.Model):
+    valor = models.FloatField()
+    aluno = models.ForeignKey("Aluno", on_delete=models.CASCADE, related_name="notas")
+    avaliacao = models.ForeignKey(
+        "Avaliacao", on_delete=models.CASCADE, related_name="notas"
     )
-    student = models.ForeignKey(
-        "Student", on_delete=models.CASCADE, related_name="grade_evaluations"
-    )
-    evaluation = models.ForeignKey(
-        "evaluation",
-        on_delete=models.SET_NULL,
-        related_name="grade_evaluations",
-        null=True,
-    )
-    value = models.FloatField()
-    is_launched = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = "Grade Evaluation"
-        verbose_name_plural = "Grade Evaluations"
-        unique_together = ("course_class", "student", "evaluation")
+        verbose_name = "Nota"
+        verbose_name_plural = "Nota"
+        unique_together = ("avaliacao", "aluno")
 
     def __str__(self):
-        return f"{self.student.user.get_full_name()} | {self.course_class.course.name}"
-
-    def get_absolute_url(self):
-        return reverse("grade_evaluation_detail", kwargs={"pk": self.pk})
+        return f"{self.valor}"
