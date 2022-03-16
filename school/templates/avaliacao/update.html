@@ -3,7 +3,7 @@
 {% block content %}
 
 <h1 class="text-center pt-5">Atualizar a avaliação</h1> <br>
-
+<a name="voltar" id="voltar" class="btn btn-dark text-light" href="{% url 'list_disciplinas' %}" role="button">Voltar</a>
 <hr>
 <form action="" method="post">
   {% csrf_token %}

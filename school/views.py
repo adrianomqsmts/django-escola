@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -90,6 +91,16 @@ class AvaliacaoCreateView(CreateView):
                 "Valor da Avalição faz com que o semestre supere 100 pontos.",
             )
             return render(self.request, self.template_name, context=context)
+        search = models.Avaliacao.objects.get(nome=avaliacao.nome)
+        if search:
+
+            messages.warning(
+                self.request,
+                "Ops! A avaliação com este nome já existe dentro da disciplina. Tente novamente.",
+            )
+            form.add_error('nome', 'A avaliação já existe...')
+            context = self.get_context_data()
+            return render(self.request, self.template_name, context=context)
         avaliacao.save()
         return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
@@ -163,6 +174,24 @@ class NotasCreateView(TemplateView):
             avaliacao.nota_eh_lancada = True
             avaliacao.save()
         return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
+
+
+class DisciplinaNotaListView(ListView):
+    model = models.Aluno
+    context_object_name = 'alunos'
+    template_name = "aluno/list_nota_disciplina.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["disciplina"] = models.Disciplina.objects.get(id=self.kwargs["pk_disciplina"])
+        context["notas"] = models.Aluno.calcular_total_por_aluno(context["disciplina"])
+        return context
+    
+    
+    def get_queryset(self, *args, **kwargs):
+        return models.Aluno.objects.filter(departamento__cursos__disciplinas__id =self.kwargs["pk_disciplina"])
+    
+
 
 
 class AlunoNotaListView(ListView):

@@ -4,6 +4,8 @@
 
 <h1 class="text-center">{{aluno}}: {{aluno.user.get_full_name}}</h1>
 <h4 class="text-center">Disciplina: {{disciplina}}</h4>
+<a name="voltar" id="voltar" class="btn btn-dark text-light" href="{% url 'list_nota_disciplina' disciplina.id %}" role="button">Voltar</a>
+
 <hr>
 
 
@@ -26,7 +28,7 @@
                     {% csrf_token %}
                      <div class="form-group">
                         <input type="number" class="form-control" name="{{nota.id}}" id="{{nota.id}}"
-                            aria-describedby="helpId" placeholder="" value="{{nota.valor}}" min="0" max="{{avaliacao.valor}}" required="" step="any">
+                            aria-describedby="helpId" placeholder="" value="{{nota.valor}}" min="0" max="{{nota.avaliacao.valor}}" required="" step="any">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Atualizar</button>
                 </form>

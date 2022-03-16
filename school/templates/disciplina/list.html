@@ -2,19 +2,29 @@
 
 {% block content %}
 
-<h1 class="text-center pt-5 pb-5">Lista de Disciplinas</h1>
+<h1 class="text-center pt-5 pb-1">Lista de Disciplinas</h1>
 <hr>
 
 {% for disciplina in disciplinas %}
 
-<div class="card text-left text-dark mb-2">
+<div class="card text-left border-dark mb-4">
   <div class="card-body">
     <h2 class="card-title">{{disciplina.curso.nome}} | <span class="h5">{{disciplina.horario}}</span></h2>
-    <hr>
-    <h4>Avaliações: <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Adicionar</a></h4>
+    <hr> <br>
+    <div class="row">
+      <div class="col-6">
+        <h3>Avaliações:</h3>
+      </div>
+      <div class="col-6">
+        <div class="text-right">
+          <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Nova Avaliação</a>
+        </div>
+      </div>
+    </div>
+    <br>
     <div class="card-columns">
       {% for avaliacao in disciplina.avaliacoes.all %}
-      <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%endif%}">
+      <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%else%}border-danger{%endif%}">
         <div class="card-body">
           <h5 class="card-title">{{avaliacao.nome | upper}}: valor : {{avaliacao.valor}}</h5>
           <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
@@ -25,26 +35,24 @@
             Lançar Notas
           </a>
           {% else %}
-          
           Notas já foram lançadas
           {% endif %}
         </div>
       </div>
       {% endfor %}
-
     </div>
-    {% for dicionario in total_por_disciplina %}
-    {% if dicionario.disciplina == disciplina %}
-    Total de notas do semestre: <strong>{{dicionario.total.valor__sum}}</strong>
-    {% endif %}
-    {% endfor %}
-
-    <br>
+    <div class="text-right">
+      {% for dicionario in total_por_disciplina %}
+      {% if dicionario.disciplina == disciplina %}
+      Total de notas do semestre: <strong>
+        {% if dicionario.total.valor__sum %}{{dicionario.total.valor__sum}}{% else %}0.0{% endif %}
+      </strong>
+      {% endif %}
+      {% endfor %}
+    </div>
     <hr>
-    <h4>Estudantes Matriculados:</h4>
-    {% for aluno  in disciplina.alunos.all %}
-    {{aluno}} <br> <a href="{% url 'list_aluno_notas' disciplina.id aluno.id %}">Ver Notas</a> <br>
-    {% endfor %}
+    <h4 class="text-right"> <a href="{% url 'list_nota_disciplina' disciplina.id %}">Estudantes Matriculados</a></h4>
+
   </div>
 </div>
 
