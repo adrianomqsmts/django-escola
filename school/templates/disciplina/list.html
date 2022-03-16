@@ -4,26 +4,28 @@
 
 <h1 class="text-center pt-5 pb-5">Lista de Disciplinas</h1>
 <hr>
+
 {% for disciplina in disciplinas %}
 
 <div class="card text-left text-dark mb-2">
   <div class="card-body">
     <h2 class="card-title">{{disciplina.curso.nome}} | <span class="h5">{{disciplina.horario}}</span></h2>
     <hr>
-    <h4>Avaliações: <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Adicionar</a></h4> 
-    <div class="card-columns">
+    <h4>Avaliações: <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Adicionar</a></h4>
+    <div class="card-columns card-deck">
       {% for avaliacao in disciplina.avaliacoes.all %}
-      <div class="card text-center">
+      <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%endif%}">
         <div class="card-body">
           <h5 class="card-title">{{avaliacao.nome | upper}}: valor : {{avaliacao.valor}}</h5>
           <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
-          <a href="{% url 'delete_avaliacao' avaliacao.id %}">Remover</a> |
-          {% if avalicao.nota_eh_lancada  %}
-          As notas já foram lançadas
-          {% else %}
-          <a href="{% url 'larcar_notas' disciplina.id avaliacao.id %}">
+          <a href="{% url 'delete_avaliacao' avaliacao.id %}">Remover</a>
+          {% if not avaliacao.nota_eh_lancada %}
+          | <a href="{% url 'larcar_notas' disciplina.id avaliacao.id %}">
             Lançar Notas
           </a>
+          {% else %}
+          <br>
+          Notas já foram lançadas
           {% endif %}
         </div>
       </div>
@@ -34,7 +36,7 @@
     {% if dicionario.disciplina == disciplina %}
     Total de notas do semestre: <strong>{{dicionario.total.valor__sum}}</strong>
     {% endif %}
-  {% endfor %}
+    {% endfor %}
 
     <br>
     <hr>

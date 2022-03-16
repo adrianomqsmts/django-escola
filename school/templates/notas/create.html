@@ -3,19 +3,26 @@
 {% block content %}
 
 <div class="container">
-    {{disciplina}} | {{avaliacao}} <br>
+    <h1 class="text-center"> {{disciplina}} </h1>
 
-    {% if error %}{{error}}{% endif %}
+    <h2 class="text-center">Lançar notas da avalicação: {{avaliacao}}</h2>
+
+    <hr>
+
+
     <form action="" method="post">
         {% csrf_token %}
+        <div class="row">
         {% for aluno in alunos %}
-        <div class="form-group">
-            <label for="{{aluno.matricula}}">{{aluno.user.get_full_name}}</label>
+        <div class="col-md-6 form-group">
+            <label for="{{aluno.matricula}}">{{aluno.matricula}} - {{aluno.user.get_full_name}}</label>
             <input type="number" class="form-control" name="{{aluno.matricula}}" id="{{aluno.matricula}}"
-                aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}">
+                aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}" required="">
         </div>
         {% endfor %}
-        <input type="submit" value="Submit">
+    </div>
+
+    <button type="submit" class="btn btn-primary  w-100 h-100">Lançar Notas</button>
     </form>
 </div>
 

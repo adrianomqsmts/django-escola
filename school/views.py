@@ -118,21 +118,24 @@ class NotasCreateView(TemplateView):
             if i == 0:
                 i += 1
                 continue
+            avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
             try:
-                avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
-                if (int(value) > avaliacao.valor) or (int(value) <= 0):
-                    raise Exception('Valor inválido: minimo 0 e máximo ', avaliacao.valor)
-                notas.append(models.Nota(
-                    valor=value,
-                    aluno=models.Aluno.objects.get(matricula=key),
-                    avaliacao=avaliacao,
-                ))
-            except Exception as e:
-                return render(request, self.template_name, context={"error": e})
+                float(value)
+            except:
+                messages.warning(self.request, f"Lamento, a nota do aluno com matricula {key} não é um valor válido")
+                return render(request, self.template_name, context=self.get_context_data())
+            if (float(value) > avaliacao.valor) or (float(value) <= 0):
+                messages.warning(self.request, f"Lamento, a nota do aluno com matricula {key} supera a nota da avaliacao")
+                return render(request, self.template_name, context=self.get_context_data())
+            notas.append(models.Nota(
+                valor=value,
+                aluno=models.Aluno.objects.get(matricula=key),
+                avaliacao=avaliacao,
+            ))
             for nota in notas:
                 nota.save()
             avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
-            avaliacao.nota_eh_lancada = True 
+            avaliacao.nota_eh_lancada = True
             avaliacao.save()
         return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
