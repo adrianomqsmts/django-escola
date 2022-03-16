@@ -1,4 +1,3 @@
-from dataclasses import field
 from django import forms
 from users.models import CustomUser
 from . import models
@@ -37,16 +36,20 @@ class CursoCreationForm(forms.ModelForm):
         fields = "__all__"
 
 
-# class AvaliacaoCreationForm(forms.ModelForm):
+class AvaliacaoCreationForm(forms.ModelForm):
 
-#     valor = forms.FloatField(
-#         validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
-#     )
+    valor = forms.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+    )
 
-#     class Meta:
-#         model = models.Avaliacao
-#         fields = ("nome", "tipo_avaliacao", "descricao", "valor")
+    class Meta:
+        model = models.Avaliacao
+        fields = ("nome", "tipo_avaliacao", "descricao", "valor")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 # class DisciplinaForm(forms.ModelForm):
     

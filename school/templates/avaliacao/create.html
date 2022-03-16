@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="text-center pt-5">Criar uma avaliação</h1> <br>
+
+{% if error %}{{error}}{% endif %}
+
+<hr>
+<form action="" method="post">
+  {% csrf_token %}
+
+  <div class="form-group">
+    {{ form.nome.errors }}
+    <div class="row">
+      <div class="col-6">
+        <strong class="pr-5">{{ form.nome.label_tag }}</strong>
+        {{ form.nome }}
+      </div>
+      <div class="col-6">
+        {{ form.tipo_avaliacao.errors }}
+        <strong class="pr-5">{{ form.tipo_avaliacao.label_tag }}</strong>
+        {{ form.tipo_avaliacao }}
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <strong>{{ form.descricao.label_tag }}</strong> {{ form.descricao.errors }}
+    {{ form.descricao }}
+  </div>
+  <div class="form-group">
+    <div class="row">
+      <div class="col-6">
+        {{ form.valor.errors }}
+        <strong class="pr-5">{{ form.valor.label_tag }}</strong>
+        {{ form.valor }}
+      </div>
+      <div class="col-6">
+     <button type="submit" class="btn btn-primary  w-100 h-100">Criar</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<br> <br>
+
+{% endblock content %}

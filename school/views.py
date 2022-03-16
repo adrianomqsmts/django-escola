@@ -6,21 +6,21 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from . import models
 from . import forms
+from django.contrib import messages
 
 
-# # Create your views here.
-# class IndexView(TemplateView):
-#     template_name = "index.html"
+class IndexView(TemplateView):
+    template_name = "index.html"
 
 
-# class DashboardView(TemplateView):
-#     template_name = "dashboard.html"
+class DashboardView(TemplateView):
+    template_name = "dashboard.html"
 
-#     def get_template_names(self):
-#         if self.request.user.is_professor:
-#             return "dashboard_professor.html"
-#         else:
-#             return "dashboard_aluno.html"
+    def get_template_names(self):
+        if self.request.user.is_professor:
+            return "dashboard_professor.html"
+        else:
+            return "dashboard_aluno.html"
 
 
 # class CourseStudentListView(ListView):
@@ -45,83 +45,96 @@ from . import forms
 #         return query
 
 
-# class CourseListView(ListView):
-#     model = models.CourseClass
-#     context_object_name = "classes"
-#     template_name = "course/course_list.html"
+class DisciplinaListView(ListView):
+    model = models.Disciplina
+    context_object_name = "disciplinas"
+    template_name = "disciplina/list.html"
+    
+    def get_context_data(self,*args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_por_disciplina'] =  models.Disciplina.calcular_total_de_nota_distribuida_por_disciplina(self.request.user.professor)
+        return context
 
-#     def get_queryset(self):
-#         query = models.CourseClass.objects.filter(professor=self.request.user.professor)
-#         return query
-
-
-# class EvaluationCreateView(CreateView):
-#     model = models.Evaluation
-#     form_class = forms.EvaluationCreationForm
-#     template_name = "evaluation/evaluation_create.html"
-#     success_url = reverse_lazy("course_list")
-
-#     def form_valid(self, form):
-#         self.obj = form.save(commit=False)
-#         self.obj.course_class = models.CourseClass.objects.get(pk=self.kwargs["pk"])
-#         self.obj.professor = models.Professor.objects.get(
-#             id=self.request.user.professor.id
-#         )
-#         self.obj.save()
-#         return HttpResponseRedirect(reverse_lazy("course_list"))
+    def get_queryset(self):
+        query = models.Disciplina.objects.filter(professor=self.request.user.professor)
+        return query
 
 
-# class EvaluationUpdateView(UpdateView):
-#     model = models.Evaluation
-#     form_class = forms.EvaluationCreationForm
-#     template_name = "evaluation/evaluation_update.html"
-#     success_url = reverse_lazy("course_list")
+class AvaliacaoCreateView(CreateView):
+    model = models.Avaliacao
+    form_class = forms.AvaliacaoCreationForm
+    template_name = "avaliacao/create.html"
+    success_url = reverse_lazy("list_disciplinas")
+    
+    def form_valid(self, form):
+        avaliacao = form.save(commit=False)
+        avaliacao.disciplina = models.Disciplina.objects.get(pk=self.kwargs["pk"])
+        avaliacao.professor = models.Professor.objects.get(
+            id=self.request.user.professor.id
+        )
+        total = avaliacao.valor + models.Disciplina.calcular_total_de_nota(
+            avaliacao.disciplina,
+        )["valor__sum"]
+        if total > 100:
+            context = self.get_context_data()
+            messages.warning(self.request, 'Valor da Avalição faz com que o semestre supere 100 pontos.')
+            return render(self.request, self.template_name, context=context)
+        avaliacao.save()
+        return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
 
-# class EvaluationDeleteView(DeleteView):
-#     model = models.Evaluation
-#     template_name = "evaluation/evaluation_delete.html"
-#     success_url = reverse_lazy("course_list")
-
-#     def get(self, request, *args, **kwargs):
-#         return self.post(request, *args, **kwargs)
+class AvaliacaoUpdateView(UpdateView):
+    model = models.Avaliacao
+    form_class = forms.AvaliacaoCreationForm
+    template_name = "avaliacao/update.html"
+    success_url = reverse_lazy("list_disciplinas")
 
 
-# class GradeEvaluationCreateView(TemplateView):
-#     template_name = "grades/grades_create.html"
+class AvaliacaoDeleteView(DeleteView):
+    model = models.Avaliacao
+    template_name = "avalicao/delete.html"
+    success_url = reverse_lazy("list_disciplinas")
 
-#     def get_context_data(self, *args, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["subject"] = models.CourseClass.objects.get(
-#             pk=self.kwargs["pk_subject"]
-#         )
-#         context["eval"] = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
-#         context["students"] = context["subject"].students.all()
-#         return context
+    def get(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
 
-#     def post(self, request, *args, **kwargs):
-#         i = 0
-#         for key, value in request.POST.items():
-#             if i == 0:
-#                 i += 1
-#                 continue
-#             try:
-#                 grade_eval = models.GradeEvaluation(
-#                     value=value,
-#                     is_launched=True,
-#                     student=models.Student.objects.get(registration=key),
-#                     course_class=models.CourseClass.objects.get(
-#                         pk=self.kwargs["pk_subject"]
-#                     ),
-#                     evaluation=models.Evaluation.objects.get(pk=self.kwargs["pk_eval"]),
-#                 )
-#                 grade_eval.save()
-#             except Exception as e:
-#                 return render(request, self.template_name, context={"error": e})
-#             eval = models.Evaluation.objects.get(pk=self.kwargs["pk_eval"])
-#             eval.is_launched = True 
-#             eval.save()
-#         return HttpResponseRedirect(reverse_lazy("course_list"))
+
+class NotasCreateView(TemplateView):
+    template_name = "notas/create.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["disciplina"] = models.Disciplina.objects.get(
+            pk=self.kwargs["pk_disciplina"]
+        )
+        context["avaliacao"] = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
+        context["alunos"] = context["disciplina"].alunos.all()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        i = 0
+        notas = []
+        for key, value in request.POST.items():
+            if i == 0:
+                i += 1
+                continue
+            try:
+                avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
+                if (int(value) > avaliacao.valor) or (int(value) <= 0):
+                    raise Exception('Valor inválido: minimo 0 e máximo ', avaliacao.valor)
+                notas.append(models.Nota(
+                    valor=value,
+                    aluno=models.Aluno.objects.get(matricula=key),
+                    avaliacao=avaliacao,
+                ))
+            except Exception as e:
+                return render(request, self.template_name, context={"error": e})
+            for nota in notas:
+                nota.save()
+            avaliacao = models.Avaliacao.objects.get(pk=self.kwargs["pk_avaliacao"])
+            avaliacao.nota_eh_lancada = True 
+            avaliacao.save()
+        return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
 
 # class StudentGradesListView(ListView):

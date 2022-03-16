@@ -53,11 +53,10 @@ class DisciplinaAdmin(admin.ModelAdmin):
 
 @admin.register(models.Avaliacao)
 class AvaliacaoAdmin(admin.ModelAdmin):
-    pass
-    # list_display = ["nome", "disciplina", "tipo_avaliacao"]
-    # search_fields = ["nome", "disciplina"]
-    # ordering = ["nome"]
-    # list_filter = ['tipo_avaliacao']
+    list_display = ["nome", "disciplina", "tipo_avaliacao"]
+    search_fields = ["nome", "disciplina"]
+    ordering = ["nome"]
+    list_filter = ['tipo_avaliacao']
 
 
 @admin.register(models.Sala)

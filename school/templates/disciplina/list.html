@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="text-center pt-5 pb-5">Lista de Disciplinas</h1>
+<hr>
+{% for disciplina in disciplinas %}
+
+<div class="card text-left text-dark mb-2">
+  <div class="card-body">
+    <h2 class="card-title">{{disciplina.curso.nome}} | <span class="h5">{{disciplina.horario}}</span></h2>
+    <hr>
+    <h4>Avaliações: <a href="{% url 'create_avaliacao' disciplina.id %}" class="btn btn-primary">Adicionar</a></h4> 
+    <div class="card-columns">
+      {% for avaliacao in disciplina.avaliacoes.all %}
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title">{{avaliacao.nome | upper}}: valor : {{avaliacao.valor}}</h5>
+          <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
+          <a href="{% url 'delete_avaliacao' avaliacao.id %}">Remover</a> |
+          {% if avalicao.nota_eh_lancada  %}
+          As notas já foram lançadas
+          {% else %}
+          <a href="{% url 'larcar_notas' disciplina.id avaliacao.id %}">
+            Lançar Notas
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+    {% for dicionario in total_por_disciplina %}
+    {% if dicionario.disciplina == disciplina %}
+    Total de notas do semestre: <strong>{{dicionario.total.valor__sum}}</strong>
+    {% endif %}
+  {% endfor %}
+
+    <br>
+    <hr>
+    <h4>Estudantes Matriculados:</h4>
+    {% for aluno  in disciplina.alunos.all %}
+    {{aluno}} <br>
+    {% endfor %}
+  </div>
+</div>
+
+
+{% comment %}
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">{{subject.course.name}}</h4>
+    <p class="card-text">{{subject.schedule}}</p>
+    <a href="{% url 'course_completed' subject.id %}">Concluir Disciplina</a>
+    <h5>Evaluations</h5>
+    {% for evaluation in subject.evaluations.all %}
+    {{evaluation.name}} | {{evaluation.value}} | <a href="{% url 'evaluation_update' evaluation.id %}">Update</a> |
+    <a href="{% url 'evaluation_delete' evaluation.id %}">Delete</a> |
+    {% if evaluation.is_launched  %} As notas já foram lançadas {% else %} <a
+      href="{% url 'grades_create' subject.id evaluation.id %}">Lançar Notas</a>{% endif %}
+    <br>
+    {% endfor %}
+    <h5>Students</h5>
+    {% for student in subject.students.all  %}
+    {{student}} | <a href="{% url 'grades_student_list' subject.id student.id %}">Ver Notas</a> <br>
+    {% endfor %}
+
+  </div>
+  <a name="" id="" class="btn btn-primary" href="{% url 'evaluation_create' subject.id %}" role="button">
+    Add
+    Evaluation
+  </a>
+</div> {% endcomment %}
+
+{% endfor %}
+
+{% endblock content %}

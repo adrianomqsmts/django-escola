@@ -1,7 +1,6 @@
-from enum import unique
 from django.db import models
 from users.models import CustomUser
-
+from django.db.models import Sum
 
 class Professor(models.Model):
     registro = models.CharField(unique=True, null=True, max_length=45)
@@ -35,7 +34,7 @@ class Aluno(models.Model):
     departamento = models.ForeignKey(
         "Departamento", on_delete=models.SET_NULL, null=True, related_name="alunos"
     )
-    disciplinas = models.ManyToManyField("Disciplina")
+    disciplinas = models.ManyToManyField("Disciplina", related_name='alunos')
 
     class Meta:
         verbose_name = "Aluno"
@@ -109,7 +108,7 @@ class Sala(models.Model):
         unique_together = ["porta", "predio"]
         
     def __str__(self):
-        return f"{self.predio}, {self.porta}"
+        return f"{self.predio}, sala: {self.porta}"
 
 
 class Horario(models.Model):
@@ -150,6 +149,25 @@ class Disciplina(models.Model):
 
     def __str__(self):
         return f"{self.curso.nome}"
+    
+    @classmethod
+    def calcular_total_de_nota_distribuida_por_disciplina(self, professor):
+        disciplinas = self.objects.filter(professor=professor).all()
+        total = []
+        for disciplina in disciplinas:
+            total.append(
+                {
+                    'disciplina': disciplina,
+                    'total': disciplina.avaliacoes.aggregate(Sum("valor"))  
+                }
+            )
+        return total
+    
+    @classmethod
+    def calcular_total_de_nota(self, disciplina):
+        disciplina = self.objects.get(id=disciplina.id)
+        total = disciplina.avaliacoes.exclude(tipo_avaliacao__nome='Extra').aggregate(Sum("valor"))
+        return total
 
 
 class TipoAvaliacao(models.Model):
@@ -198,7 +216,7 @@ class Nota(models.Model):
 
     class Meta:
         verbose_name = "Nota"
-        verbose_name_plural = "Nota"
+        verbose_name_plural = "Notas"
         unique_together = ("avaliacao", "aluno")
 
     def __str__(self):
