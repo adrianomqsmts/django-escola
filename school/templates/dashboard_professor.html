@@ -2,8 +2,16 @@
 
 {% block content %}
 
-<h1>Bem-vindo professor: {{request.user.get_full_name}}</h1>
+<h1 class="text-center pt-3">Bem-vindo professor: {{request.user.get_full_name}}</h1>
 
-<a name="" id="" class="btn btn-primary" href="{% url 'list_disciplinas' %}" role="button">Disciplinas</a>
+<hr>
+
+<h2>Operações: </h2>
+
+<br>
+
+
+<a name="" id="" class="btn btn-primary" href="{% url 'list_disciplinas' %}" role="button">Ver Disciplinas</a>
+<a name="" id="" class="btn btn-primary" href="" role="button">Atualizar Perfil</a>
 
 {% endblock content %}

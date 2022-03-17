@@ -9,7 +9,8 @@
 
 <div class="card text-left border-dark mb-4">
   <div class="card-body">
-    <h2 class="card-title">{{disciplina.curso.nome}} | <span class="h5">{{disciplina.horario}}</span></h2>
+    <h2 class="card-title">{{disciplina.curso.nome}}</h2>
+    <p> {{disciplina.horario}}</p>
     <hr> <br>
     <div class="row">
       <div class="col-6">
@@ -24,13 +25,11 @@
     <br>
     <div class="card-columns">
       {% for avaliacao in disciplina.avaliacoes.all %}
-      <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%else%}border-danger{%endif%}">
+      <div class="card text-center {%if avaliacao.nota_eh_lancada %}border-success{% else %}border-danger{% endif %}">
         <div class="card-body">
           <h5 class="card-title">
             <a class="text-decoration-none text-dark" href="{% url 'detail_avaliacao_aluno' avaliacao.id %}">
-              {{avaliacao.nome | upper}}
-           
-             valor : {{avaliacao.valor}}
+              {{avaliacao.nome | upper}} 
             </a>
           </h5>
           <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
@@ -43,6 +42,7 @@
           {% else %}
           Notas já foram lançadas
           {% endif %}
+          <span class="badge badge-{%if avaliacao.nota_eh_lancada %}secondary{% else %}primary{% endif %}">{{avaliacao.valor}}</span>
         </div>
       </div>
       {% endfor %}
@@ -62,32 +62,6 @@
   </div>
 </div>
 
-
-{% comment %}
-<div class="card">
-  <div class="card-body">
-    <h4 class="card-title">{{subject.course.name}}</h4>
-    <p class="card-text">{{subject.schedule}}</p>
-    <a href="{% url 'course_completed' subject.id %}">Concluir Disciplina</a>
-    <h5>Evaluations</h5>
-    {% for evaluation in subject.evaluations.all %}
-    {{evaluation.name}} | {{evaluation.value}} | <a href="{% url 'evaluation_update' evaluation.id %}">Update</a> |
-    <a href="{% url 'evaluation_delete' evaluation.id %}">Delete</a> |
-    {% if evaluation.is_launched  %} As notas já foram lançadas {% else %} <a
-      href="{% url 'grades_create' subject.id evaluation.id %}">Lançar Notas</a>{% endif %}
-    <br>
-    {% endfor %}
-    <h5>Students</h5>
-    {% for student in subject.students.all  %}
-    {{student}} | <a href="{% url 'grades_student_list' subject.id student.id %}">Ver Notas</a> <br>
-    {% endfor %}
-
-  </div>
-  <a name="" id="" class="btn btn-primary" href="{% url 'evaluation_create' subject.id %}" role="button">
-    Add
-    Evaluation
-  </a>
-</div> {% endcomment %}
 
 {% endfor %}
 

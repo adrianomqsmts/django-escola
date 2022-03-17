@@ -5,24 +5,37 @@
 <div class="container">
     <h1 class="text-center"> {{disciplina}} </h1>
 
-    <h2 class="text-center">Lançar notas da avalicação: {{avaliacao}}</h2>
-    <a name="voltar" id="voltar" class="btn btn-dark text-light" href="{% url 'list_disciplinas' %}" role="button">Voltar</a>
+    <h2 class="text-center">Lançar notas da avalicação: {{avaliacao}}</h2> <br>
+
+    <div class="row">
+        <div class="col-6">
+            <a name="voltar" id="voltar" class="btn btn-dark text-light" href="{% url 'list_disciplinas' %}"
+                role="button">Voltar</a>
+        </div>
+        <div class="col-6 text-right">
+            <h3>Valor: {{avaliacao.valor}}</h3>
+        </div>
+    </div>
+
+
+
     <hr>
+    <br>
 
 
     <form action="" method="post">
         {% csrf_token %}
         <div class="row">
-        {% for aluno in alunos %}
-        <div class="col-md-6 form-group">
-            <label for="{{aluno.matricula}}">{{aluno.matricula}} - {{aluno.user.get_full_name}}</label>
-            <input type="number" class="form-control" name="{{aluno.matricula}}" id="{{aluno.matricula}}"
-                aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}" required="" step="any">
+            {% for aluno in alunos %}
+            <div class="col-md-6 form-group">
+                <label for="{{aluno.matricula}}">{{aluno.matricula}} - {{aluno.user.get_full_name}}</label>
+                <input type="number" class="form-control" name="{{aluno.matricula}}" id="{{aluno.matricula}}"
+                    aria-describedby="helpId" placeholder="" min="0" max="{{avaliacao.valor}}" required="" step="any">
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-
-    <button type="submit" class="btn btn-primary  w-100 h-100">Lançar Notas</button>
+        <br>
+        <button type="submit" class="btn btn-primary  w-100 h-100">Lançar Notas</button>
     </form>
 </div>
 

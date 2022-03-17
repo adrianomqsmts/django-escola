@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1 class="text-center pt-5">Disciplinas Matriculado</h1> <br>
+<h1 class="text-center pt-5">Matrículas</h1> <br>
 
 
 <hr>
@@ -10,7 +10,7 @@
 {% for disciplina in disciplinas %}
 <div class="card mb-3">
     <div class="card-body">
-        <h4 class="card-title">{{disciplina}}</h4>
+        <h2 class="card-title">{{disciplina}}</h2>
         <p class="card-text">{{disciplina.horario}}</p>
         <hr>
         <div class="text-right">

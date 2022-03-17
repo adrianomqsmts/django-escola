@@ -60,18 +60,36 @@ class AlunoDisciplinasListView(ListView):
             if nota_disciplina["total"] != None:
                 if nota_disciplina["total"] >= 60:
                     context["nota_disciplinas"].append(
-                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "success"}
+                        {
+                            "total": nota_disciplina["total"],
+                            "disciplina": nota_disciplina["disciplina"],
+                            "alert": "success",
+                        }
                     )
                 elif nota_disciplina["total"] >= 40:
                     context["nota_disciplinas"].append(
-                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "warning"}
+                        {
+                            "total": nota_disciplina["total"],
+                            "disciplina": nota_disciplina["disciplina"],
+                            "alert": "warning",
+                        }
                     )
                 else:
                     context["nota_disciplinas"].append(
-                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "danger"}
+                        {
+                            "total": nota_disciplina["total"],
+                            "disciplina": nota_disciplina["disciplina"],
+                            "alert": "danger",
+                        }
                     )
             else:
-                context["nota_disciplinas"].append({"total": 0.0, "disciplina": nota_disciplina["disciplina"], "alert": "danger"})
+                context["nota_disciplinas"].append(
+                    {
+                        "total": 0.0,
+                        "disciplina": nota_disciplina["disciplina"],
+                        "alert": "danger",
+                    }
+                )
 
         return context
 
@@ -111,13 +129,16 @@ class AvaliacaoCreateView(CreateView):
         avaliacao.professor = models.Professor.objects.get(
             id=self.request.user.professor.id
         )
+        
         disciplina_total = models.Disciplina.calcular_total_de_nota(
             avaliacao.disciplina,
         )["valor__sum"]
+        
         if disciplina_total:
             total = avaliacao.valor + disciplina_total
         else:
             total = avaliacao.valor
+            
         if total > 100:
             context = self.get_context_data()
             messages.warning(
@@ -125,8 +146,11 @@ class AvaliacaoCreateView(CreateView):
                 "Valor da Avalição faz com que o semestre supere 100 pontos.",
             )
             return render(self.request, self.template_name, context=context)
+        
         try:
-            search = models.Avaliacao.objects.get(nome=avaliacao.nome)
+            search = models.Avaliacao.objects.get(
+                nome=avaliacao.nome, disciplina_id=avaliacao.disciplina
+            )
         except Exception as e:
             search = False
         if search:
@@ -146,6 +170,30 @@ class AvaliacaoUpdateView(UpdateView):
     form_class = forms.AvaliacaoCreationForm
     template_name = "avaliacao/update.html"
     success_url = reverse_lazy("list_disciplinas")
+    
+    def form_valid(self, form):
+        avaliacao = form.save(commit=False)
+        valor_antigo = models.Avaliacao.objects.get(id=avaliacao.id)
+        disciplina_total = models.Disciplina.calcular_total_de_nota(
+            avaliacao.disciplina,
+        )["valor__sum"]
+        
+        if disciplina_total:
+            total = disciplina_total - valor_antigo.valor
+            total = avaliacao.valor + total
+        else:
+            total = avaliacao.valor
+            
+        if total > 100:
+            context = self.get_context_data()
+            messages.warning(
+                self.request,
+                "Valor da Avalição faz com que o semestre supere 100 pontos.",
+            )
+            return render(self.request, self.template_name, context=context)
+        
+        avaliacao.save()
+        return HttpResponseRedirect(reverse_lazy("list_disciplinas"))
 
 
 class AvaliacaoDeleteView(DeleteView):
@@ -251,7 +299,7 @@ class AlunoNotaListView(ListView):
                 continue
             nota = models.Nota.objects.get(pk=key)
             nota.valor = float(request.POST.get(str(key)))
-            if (nota.valor) <= 0 or (nota.avaliacao.valor < nota.valor):
+            if (nota.valor) < 0 or (nota.avaliacao.valor < nota.valor):
                 messages.warning(request, f"Lamento, a nota supera a nota da avaliacao")
                 return redirect(
                     "list_aluno_notas",
@@ -276,5 +324,5 @@ class AlunoNotaListView(ListView):
 
 class AvaliacaoDetailView(DetailView):
     model = models.Avaliacao
-    context_object_name = 'avaliacao'
+    context_object_name = "avaliacao"
     template_name = "avaliacao/detail.html"

@@ -46,13 +46,17 @@ class Aluno(models.Model):
     @classmethod
     def calcular_total_por_aluno(self, disciplina):
         alunos = self.objects.filter(disciplinas__id = disciplina.id)
-        totais = []
+        output = []
         for aluno in alunos:
-            totais.append({
+            total = 0
+            notas = aluno.notas.filter(avaliacao__disciplina_id = disciplina.id)
+            for nota in notas:
+                total += nota.valor
+            output.append({
                 "aluno": aluno,
-                "nota":aluno.notas.all().aggregate(Sum("valor"))
+                "nota": total
                 })
-        return totais
+        return output
 
 
 class Departamento(models.Model):
