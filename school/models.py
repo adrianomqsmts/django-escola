@@ -29,7 +29,7 @@ class Aluno(models.Model):
 
     matricula = models.CharField(max_length=45, unique=True)
     user = models.OneToOneField(
-        "users.CustomUser", on_delete=models.CASCADE, related_name="alunos"
+        "users.CustomUser", on_delete=models.CASCADE, related_name="aluno"
     )
     departamento = models.ForeignKey(
         "Departamento", on_delete=models.SET_NULL, null=True, related_name="alunos"
@@ -179,6 +179,23 @@ class Disciplina(models.Model):
         disciplina = self.objects.get(id=disciplina.id)
         total = disciplina.avaliacoes.exclude(tipo_avaliacao__nome='Extra').aggregate(Sum("valor"))
         return total
+    
+    @classmethod
+    def calcular_total_do_aluno_por_disciplina(self, aluno):
+        disciplinas = self.objects.filter(alunos__id=aluno.id)
+        output = []
+        for disciplina in disciplinas:
+            avaliacoes = disciplina.avaliacoes.filter(notas__aluno_id=aluno.id).all()
+            total = 0
+            for avaliacao in avaliacoes:
+                for nota in avaliacao.notas.filter(aluno_id=aluno.id).all():
+                    total += nota.valor
+            output.append({
+                "disciplina": disciplina,
+                "total": total
+            })
+                
+        return output
     
 
 class TipoAvaliacao(models.Model):

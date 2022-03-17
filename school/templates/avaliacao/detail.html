@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="text-center">{{avaliacao}}</h1>
+<a name="voltar" id="voltar" class="btn btn-dark text-light" onClick="history.go(-1)" role="button">Voltar</a>
+<hr>
+
+<h2>Descrição do Trabalho</h2>
+
+<p class="lead">{{avaliacao.descricao}}</p>
+
+<hr>
+
+<div class="row">
+    <div class="col-6">
+
+        <h3>Tipo: </h3>
+
+        <p class="lead">{{avaliacao.tipo_avaliacao}}</p>
+    </div>
+    <div class="col-6">
+
+        <h3>Valor: </h3>
+
+        <p class="lead">{{avaliacao.valor}}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+
+        <h3>Disciplina: </h3>
+
+        <p class="lead">{{avaliacao.disciplina}}</p>
+    </div>
+    <div class="col-6">
+
+        <h3>Professor: </h3>
+
+        <p class="lead">{{avaliacao.disciplina.professor.user.get_full_name}}</p>
+    </div>
+</div>
+
+
+{% endblock content %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="text-center pt-5">Disciplinas Matriculado</h1> <br>
+
+
+<hr>
+
+{% for disciplina in disciplinas %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h4 class="card-title">{{disciplina}}</h4>
+        <p class="card-text">{{disciplina.horario}}</p>
+        <hr>
+        <div class="text-right">
+            <a class="btn btn-primary" data-toggle="collapse" href="#{{disciplina.curso.codigo}}" aria-expanded="false"
+                aria-controls="{{disciplina.curso.codigo}}">
+                Mostrar/Esconder notas
+            </a>
+        </div>
+
+        <div class="collapse" id="{{disciplina.curso.codigo}}">
+            <h5>Avaliações</h5>
+
+            <table class="table w-100 table-striped table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Avaliação</th>
+                        <th>Tipo</th>
+                        <th>valor</th>
+                        <th>TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nota in notas %}
+
+                    {% if nota.nota.avaliacao.disciplina == disciplina %}
+                    <tr>
+                        <td scope="row">
+                            <a href="{% url 'detail_avaliacao_aluno' nota.nota.avaliacao.id %}">
+                                {{nota.nota.avaliacao.nome | upper}}
+                            </a>
+
+                        </td>
+                        <td>{{nota.nota.avaliacao.tipo_avaliacao}} </td>
+                        <td>{{nota.nota.avaliacao.valor}} </td>
+
+                        <td class="table-{{nota.alert}}">
+                            {{nota.nota.valor}}
+                        </td>
+
+                    </tr>
+                    {% endif %}
+
+                    {% endfor %}
+                    <tr>
+                        <td class="text-right" colspan="3">Nota Final:</td>
+
+                        {% for nota_disciplina in nota_disciplinas %}
+
+                        {% if nota_disciplina.disciplina.id == disciplina.id %}
+                        <td class="table-{{nota_disciplina.alert}}">
+                            {% if  nota_disciplina.total %}
+                            {{nota_disciplina.total}}
+                            {% else %}
+                            0
+                            {% endif %}
+                        </td>
+                        {% endif %}
+
+                        {% endfor %}
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endfor %}
+
+{% endblock content %}

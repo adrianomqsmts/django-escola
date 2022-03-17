@@ -1,13 +1,23 @@
-from pyexpat import model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic.base import TemplateView, View
+from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from . import models
 from . import forms
 from django.contrib import messages
+
+
+from django import template
+
+register = template.Library()
+
+
+@register.filter
+def multiply(value, arg):
+    return value * arg
 
 
 class IndexView(TemplateView):
@@ -24,26 +34,50 @@ class DashboardView(TemplateView):
             return "dashboard_aluno.html"
 
 
-# class CourseStudentListView(ListView):
-#     model = models.CourseClass
-#     context_object_name = "classes"
-#     template_name = "course/course_list_student.html"
+class AlunoDisciplinasListView(ListView):
+    model = models.Disciplina
+    context_object_name = "disciplinas"
+    template_name = "disciplina/list_aluno.html"
 
-#     def get_context_data(self, *args, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         student = self.request.user.student
-#         context["grades"] = student.grade_evaluations.all()
-#         context['totals'] = []
-#         for class_ in  self.model.objects.all():
-#             context['totals'].append({
-#                 'class': class_.course.name,
-#                 'grade': class_.sum_grades_student(class_, student)
-#             })
-#         return context
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        aluno = self.request.user.aluno
+        context["notas"] = []
+        notas = aluno.notas.all()
+        for nota in notas:
+            if nota.valor >= (0.6 * nota.avaliacao.valor):
+                context["notas"].append({"nota": nota, "alert": "success"})
+            elif nota.valor >= (0.4 * nota.avaliacao.valor):
+                context["notas"].append({"nota": nota, "alert": "warning"})
+            else:
+                context["notas"].append({"nota": nota, "alert": "danger"})
 
-#     def get_queryset(self):
-#         query = models.CourseClass.objects.filter(students=self.request.user.student)
-#         return query
+        nota_disciplinas = models.Disciplina.calcular_total_do_aluno_por_disciplina(
+            aluno
+        )
+        context["nota_disciplinas"] = []
+        for nota_disciplina in nota_disciplinas:
+            if nota_disciplina["total"] != None:
+                if nota_disciplina["total"] >= 60:
+                    context["nota_disciplinas"].append(
+                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "success"}
+                    )
+                elif nota_disciplina["total"] >= 40:
+                    context["nota_disciplinas"].append(
+                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "warning"}
+                    )
+                else:
+                    context["nota_disciplinas"].append(
+                        {"total": nota_disciplina["total"], "disciplina": nota_disciplina["disciplina"], "alert": "danger"}
+                    )
+            else:
+                context["nota_disciplinas"].append({"total": 0.0, "disciplina": nota_disciplina["disciplina"], "alert": "danger"})
+
+        return context
+
+    def get_queryset(self):
+        query = models.Disciplina.objects.filter(alunos=self.request.user.aluno)
+        return query
 
 
 class DisciplinaListView(ListView):
@@ -91,14 +125,16 @@ class AvaliacaoCreateView(CreateView):
                 "Valor da Avalição faz com que o semestre supere 100 pontos.",
             )
             return render(self.request, self.template_name, context=context)
-        search = models.Avaliacao.objects.get(nome=avaliacao.nome)
+        try:
+            search = models.Avaliacao.objects.get(nome=avaliacao.nome)
+        except Exception as e:
+            search = False
         if search:
-
             messages.warning(
                 self.request,
                 "Ops! A avaliação com este nome já existe dentro da disciplina. Tente novamente.",
             )
-            form.add_error('nome', 'A avaliação já existe...')
+            form.add_error("nome", "A avaliação já existe...")
             context = self.get_context_data()
             return render(self.request, self.template_name, context=context)
         avaliacao.save()
@@ -178,20 +214,21 @@ class NotasCreateView(TemplateView):
 
 class DisciplinaNotaListView(ListView):
     model = models.Aluno
-    context_object_name = 'alunos'
+    context_object_name = "alunos"
     template_name = "aluno/list_nota_disciplina.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["disciplina"] = models.Disciplina.objects.get(id=self.kwargs["pk_disciplina"])
+        context["disciplina"] = models.Disciplina.objects.get(
+            id=self.kwargs["pk_disciplina"]
+        )
         context["notas"] = models.Aluno.calcular_total_por_aluno(context["disciplina"])
         return context
-    
-    
-    def get_queryset(self, *args, **kwargs):
-        return models.Aluno.objects.filter(departamento__cursos__disciplinas__id =self.kwargs["pk_disciplina"])
-    
 
+    def get_queryset(self, *args, **kwargs):
+        return models.Aluno.objects.filter(
+            departamento__cursos__disciplinas__id=self.kwargs["pk_disciplina"]
+        )
 
 
 class AlunoNotaListView(ListView):
@@ -235,3 +272,9 @@ class AlunoNotaListView(ListView):
             avaliacao__disciplina=self.kwargs["pk_disciplina"],
         )
         return query
+
+
+class AvaliacaoDetailView(DetailView):
+    model = models.Avaliacao
+    context_object_name = 'avaliacao'
+    template_name = "avaliacao/detail.html"

@@ -1,10 +1,38 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Login</h1>
-<form action="" method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Send message" />
-</form>
+
+
+
+<h1 class="text-center">Login</h1>
+
+<hr>
+{{ form.non_field_errors }}
+<div class="row justify-content-center">
+    <form action="" method="post" class=" p-3 border-rounded">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">E-mail</label> {{form.username.errors}}
+            <input type="text" class="form-control" name="{{ form.username.name }}" id="{{ form.username.id }}"
+                aria-describedby="helpId" placeholder="email@email.com">
+            {% if form.campo.help_text %}
+            <small id="helpId" class="form-text text-muted">{{form.username.help_text|safe}}</small>
+            {% endif %}
+
+        </div>
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Senha</label> {{form.password.errors}}
+            <input type="password" class="form-control" name="{{ form.password.name }}" id="{{ form.password.id }}"
+                aria-describedby="helpId" placeholder="email@email.com">
+            {% if form.campo.help_text %}
+            <small id="helpId" class="form-text text-muted">{{form.password.help_text|safe}}</small>
+            {% endif %}
+        </div>
+        <input type="submit" class="btn btn-primary w-100" value="Login" />
+    </form>
+</div>
+
+
+
 
 {% endblock content %}

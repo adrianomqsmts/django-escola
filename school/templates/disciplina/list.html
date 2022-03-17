@@ -26,7 +26,13 @@
       {% for avaliacao in disciplina.avaliacoes.all %}
       <div class="card text-center {%if avaliacao.nota_eh_lancada%}border-success{%else%}border-danger{%endif%}">
         <div class="card-body">
-          <h5 class="card-title">{{avaliacao.nome | upper}}: valor : {{avaliacao.valor}}</h5>
+          <h5 class="card-title">
+            <a class="text-decoration-none text-dark" href="{% url 'detail_avaliacao_aluno' avaliacao.id %}">
+              {{avaliacao.nome | upper}}
+           
+             valor : {{avaliacao.valor}}
+            </a>
+          </h5>
           <a href="{% url 'update_avaliacao' avaliacao.id %}">Editar</a> |
           <a href="{% url 'delete_avaliacao' avaliacao.id %}">Remover</a>
           <br>
